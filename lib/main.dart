@@ -1,14 +1,13 @@
 /// -----------------------------------
 ///          External Packages
 /// -----------------------------------
-
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'package:http/http.dart' as http;
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 
 final FlutterAppAuth appAuth = FlutterAppAuth();
 const FlutterSecureStorage secureStorage = FlutterSecureStorage();
@@ -17,8 +16,8 @@ const FlutterSecureStorage secureStorage = FlutterSecureStorage();
 ///           Auth0 Variables
 /// -----------------------------------
 
-const String AUTH0_DOMAIN = 'YOUR-AUTH0-DOMAIN';
-const String AUTH0_CLIENT_ID = 'YOUR-AUTH0-CLIENT-ID';
+const String AUTH0_DOMAIN = 'dev-b82k64dn.us.auth0.com';
+const String AUTH0_CLIENT_ID = 'blbRr9k6LQXMI9oACIRmT6Qlk2N2HZMs';
 
 const String AUTH0_REDIRECT_URI = 'com.auth0.flutterdemo://login-callback';
 const String AUTH0_ISSUER = 'https://$AUTH0_DOMAIN';
@@ -27,44 +26,54 @@ const String AUTH0_ISSUER = 'https://$AUTH0_DOMAIN';
 ///           Profile Widget
 /// -----------------------------------
 
-class Profile extends StatelessWidget {
-  final Future<void> Function() logoutAction;
-  final String name;
-  final String picture;
-
-  const Profile(this.logoutAction, this.name, this.picture, {Key key})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Container(
-          width: 150,
-          height: 150,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blue, width: 4),
-            shape: BoxShape.circle,
-            image: DecorationImage(
-              fit: BoxFit.fill,
-              image: NetworkImage(picture ?? ''),
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text('Name: $name'),
-        const SizedBox(height: 48),
-        RaisedButton(
-          onPressed: () async {
-            await logoutAction();
-          },
-          child: const Text('Logout'),
-        ),
-      ],
-    );
-  }
-}
+// class Profile extends StatelessWidget {
+//   final Future<void> Function() logoutAction;
+//   final String name;
+//   final String picture;
+//
+//   const Profile(this.logoutAction, this.name, this.picture, {Key key})
+//       : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: <Widget>[
+//         Container(
+//           width: 150,
+//           height: 150,
+//           decoration: BoxDecoration(
+//             border: Border.all(color: Colors.blue, width: 4),
+//             shape: BoxShape.circle,
+//             image: DecorationImage(
+//               fit: BoxFit.fill,
+//               image: NetworkImage(picture ?? ''),
+//             ),
+//           ),
+//         ),
+//         const SizedBox(height: 24),
+//         Text('Name: $name'),
+//         const SizedBox(height: 48),
+//         ElevatedButton(
+//           onPressed: () async {
+//             await logoutAction();
+//           },
+//           child: const Text('Logout'),
+//         ),
+//       ],
+//     );
+//   }
+//
+//   @override
+//   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+//     super.debugFillProperties(properties);
+//     properties
+//       ..add(StringProperty('name', name))
+//       ..add(StringProperty('picture', picture))
+//       ..add(ObjectFlagProperty<Future<void> Function()>.has(
+//           'logoutAction', logoutAction));
+//   }
+// }
 
 /// -----------------------------------
 ///            Login Widget
@@ -81,7 +90,7 @@ class Login extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        RaisedButton(
+        ElevatedButton(
           onPressed: () async {
             await loginAction();
           },
@@ -90,6 +99,15 @@ class Login extends StatelessWidget {
         Text(loginError ?? ''),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('loginError', loginError))
+      ..add(ObjectFlagProperty<Future<void> Function()>.has(
+          'loginAction', loginAction));
   }
 }
 
@@ -147,7 +165,7 @@ class _MyAppState extends State<MyApp> {
   Future<Map<String, Object>> getUserDetails(String accessToken) async {
     const String url = 'https://$AUTH0_DOMAIN/userinfo';
     final http.Response response = await http.get(
-      url,
+      Uri.parse(url),
       headers: <String, String>{'Authorization': 'Bearer $accessToken'},
     );
 
@@ -248,5 +266,16 @@ class _MyAppState extends State<MyApp> {
       debugPrint('error on refresh token: $e - stack: $s');
       await logoutAction();
     }
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('isBusy', isBusy))
+      ..add(DiagnosticsProperty<bool>('isLoggedIn', isLoggedIn))
+      ..add(StringProperty('errorMessage', errorMessage))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('picture', picture));
   }
 }
